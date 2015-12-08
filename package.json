@@ -1,0 +1,23 @@
+{
+  "name": "cloud-server",
+  "version": "0.0.0",
+  "description": "RESTful Web Server For NetApp VED Helper App",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://192.168.1.102:3000/NetAppHack15/cloud-server"
+  },
+  "author": "Shivam Khandelwal",
+  "license": "GPL v2.0",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "jsonwebtoken": "^5.4.1",
+    "mongoose": "^4.2.9",
+    "morgan": "^1.6.1"
+  }
+}
