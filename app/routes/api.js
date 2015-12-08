@@ -7,6 +7,7 @@ var User = require('../models/user');
 var apiRoutes = express.Router();
 
 apiRoutes.post('/authenticate', function(req, res) {
+	console.log(req.body);
 	User.findOne({
 		username: req.body.username
 	}, function(err, user) {
@@ -54,6 +55,7 @@ apiRoutes.use(function(req, res, next) {
 				})
 			} else {
 				req.decoded = decoded;
+				console.log(decoded);
 				next();
 			}
 		});
