@@ -8,6 +8,8 @@ var jwt = require('jsonwebtoken');
 var config = require('./config');
 var User = require('./app/models/user');
 
+var apiRoutes = require('./app/routes/api');
+
 var port = process.env.PORT || 8080;
 
 mongoose.connect(config.database);
@@ -26,7 +28,8 @@ app.get('/', function(req, res) {
 
 app.get('/setup', function(req, res) {
 	var john = new User({
-		username: 'John Doe',
+		name: 'John Doe',
+		username: 'john',
 		password: 'password'
 	});
 
@@ -38,18 +41,7 @@ app.get('/setup', function(req, res) {
 	})
 });
 
-var apiRoutes = express.Router();
-apiRoutes.get('/', function(req, res) {
-	res.json({message: 'Welcome to VPN bypass APIs'});
-});
-apiRoutes.get('/users', function(req, res) {
-	User.find({}, function(err, users) {
-		res.json(users);
-	});
-});
-apiRoutes.post('/authenticate', function(req, res) {
-	User.findOne()
-})
+
 app.use('/api', apiRoutes);
 
 app.listen(port);
