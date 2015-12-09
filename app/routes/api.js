@@ -1,10 +1,11 @@
-var express = require('express');
-var mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
-var config = require('../../config');
-var User = require('../models/user');
+var express 	= require('express');
+var mongoose 	= require('mongoose');
+var jwt 		= require('jsonwebtoken');
+var config 		= require('../../config');
+var User 		= require('../models/user');
+var http 		= require('http');
+var apiRoutes 	= express.Router();
 
-var apiRoutes = express.Router();
 
 apiRoutes.post('/authenticate', function(req, res) {
 	console.log(req.body);
@@ -42,7 +43,6 @@ apiRoutes.post('/authenticate', function(req, res) {
 		}
 	});
 });
-
 apiRoutes.use(function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
@@ -69,8 +69,7 @@ apiRoutes.use(function(req, res, next) {
 			}
 		});
 	}
-})
-
+});
 apiRoutes.get('/validate', function(req, res) {
 	res.json({
 		err: {
@@ -80,6 +79,7 @@ apiRoutes.get('/validate', function(req, res) {
 	});
 });
 apiRoutes.get('/workspaces', function(req, res) {
+	var username = req.username;
 	User.findOne({
 		username: req.username
 	}, function(err, user) {
@@ -91,23 +91,28 @@ apiRoutes.get('/workspaces', function(req, res) {
 				}
 			});
 		} else {
-			res.json({
-				err: {
-					errNo: 0,
-					errMsg: "OK"
-				},
-				username: req.username,
-				workspaces: [
-					{
-						name: "dev",
-						id: "1",
-					},
-					{
-						name: "fullsteam",
-						id: "2"
-					}
-				]
+			var ovs_options = {
+				"method": "GET",
+				"hostname": "10.74.213.25",
+				"port": "1337",
+				"path": "/api/workspace/?username="+ username,
+				"headers": {
+					"cache-control": "no-cache",
+				}
+			};
+			var reqs = http.request(ovs_options, function (resp) {
+				var respStr;
+
+				resp.on("data", function (chunk) {
+					respStr += chunk;
+				});
+
+				resp.on("end", function () {
+					res.json(JSON.parse(respStr));
+				});
 			});
+			reqs.end();
+
 		}
 	});
 });
@@ -123,32 +128,29 @@ apiRoutes.get('/ops', function(req, res) {
 				}
 			});
 		} else {
-			res.json({
-				err: {
-					errNo: 0,
-					errMsg: "OK"
-				},
-				ops: [{
-					"opName": "Build",
-					"opDescription": "Trigger a presubmit build",
-					"opId": 0,
-					"opCategory": "Build"
-				},
-				{
-					"opName": "Test",
-					"opDescription": "Trigger a smoke test",
-					"opId": 1,
-					"opCategory": "Test"
-				},
-				{
-					"opName": "Update Review Board",
-					"opDescription": "Update review board",
-					"opId": 2,
-					"opCategory": "Misc."
-				}]
+			var ovs_options = { 
+				"method": "GET",
+				"hostname": "10.74.213.25",
+				"port": "1337",
+				"path": "/api/ops",
+				"headers": {
+					"cache-control": "no-cache",
+				}
+			};
+			var reqs = http.request(ovs_options, function (resp) {
+				var respStr; 
+
+				resp.on("data", function (chunk) {
+					respStr += chunk;
+				}); 
+
+				resp.on("end", function () {
+					res.json(JSON.parse(respStr));
+				}); 
 			});
+			reqs.end();
 		}
-	})
+	});
 })
 apiRoutes.get('/users', function(req, res) {
 	User.find({}, function(err, users) {
