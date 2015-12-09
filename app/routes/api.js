@@ -6,7 +6,7 @@ var User = require('../models/user');
 
 var apiRoutes = express.Router();
 
-apiRoutes.post('/login', function(req, res) {
+apiRoutes.post('/authenticate', function(req, res) {
 	console.log(req.body);
 	User.findOne({
 		username: req.body.username
@@ -79,7 +79,6 @@ apiRoutes.get('/validate', function(req, res) {
 		}
 	});
 });
-
 apiRoutes.get('/workspaces', function(req, res) {
 	User.findOne({
 		username: req.username
@@ -93,15 +92,19 @@ apiRoutes.get('/workspaces', function(req, res) {
 			});
 		} else {
 			res.json({
-				username : req.username,
-				workspaces : [
+				err: {
+					errNo: 0,
+					errMsg: "OK"
+				},
+				username: req.username,
+				workspaces: [
 					{
-						"name":"dev",
-						"id":"1",
+						name: "dev",
+						id: "1",
 					},
 					{
-						"name":"fullsteam",
-						"id":"2"
+						name: "fullsteam",
+						id: "2"
 					}
 				]
 			});
@@ -116,12 +119,16 @@ apiRoutes.get('/ops', function(req, res) {
 			res.json({
 				err: {
 					errNo: 1,
-					errMsg: "No such user!"
+					errMsg: "Something bad happened!"
 				}
 			});
 		} else {
-			res.json([
-				{
+			res.json({
+				err: {
+					errNo: 0,
+					errMsg: "OK"
+				},
+				ops: [{
 					"opName": "Build",
 					"opDescription": "Trigger a presubmit build",
 					"opId": 0,
@@ -130,10 +137,16 @@ apiRoutes.get('/ops', function(req, res) {
 				{
 					"opName": "Test",
 					"opDescription": "Trigger a smoke test",
-					"opId": 0,
+					"opId": 1,
 					"opCategory": "Test"
-				}
-			]);
+				},
+				{
+					"opName": "Update Review Board",
+					"opDescription": "Update review board",
+					"opId": 2,
+					"opCategory": "Misc."
+				}]
+			});
 		}
 	})
 })
