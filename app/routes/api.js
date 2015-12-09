@@ -42,6 +42,7 @@ apiRoutes.post('/login', function(req, res) {
 		}
 	});
 });
+
 apiRoutes.use(function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
@@ -69,6 +70,7 @@ apiRoutes.use(function(req, res, next) {
 		});
 	}
 })
+
 apiRoutes.get('/validate', function(req, res) {
 	res.json({
 		err: {
@@ -77,7 +79,64 @@ apiRoutes.get('/validate', function(req, res) {
 		}
 	});
 });
-apiRoutes.get('get')
+
+apiRoutes.get('/workspaces', function(req, res) {
+	User.findOne({
+		username: req.username
+	}, function(err, user) {
+		if (!user) {
+			res.json({
+				err: {
+					errNo: 1,
+					errMsg: "No such user!"
+				}
+			});
+		} else {
+			res.json({
+				username : req.username,
+				workspaces : [
+					{
+						"name":"dev",
+						"id":"1",
+					},
+					{
+						"name":"fullsteam",
+						"id":"2"
+					}
+				]
+			});
+		}
+	});
+});
+apiRoutes.get('/ops', function(req, res) {
+	User.findOne({
+		username: req.username
+	}, function(err, user) {
+		if (!user) {
+			res.json({
+				err: {
+					errNo: 1,
+					errMsg: "No such user!"
+				}
+			});
+		} else {
+			res.json([
+				{
+					"opName": "Build",
+					"opDescription": "Trigger a presubmit build",
+					"opId": 0,
+					"opCategory": "Build"
+				},
+				{
+					"opName": "Test",
+					"opDescription": "Trigger a smoke test",
+					"opId": 0,
+					"opCategory": "Test"
+				}
+			]);
+		}
+	})
+})
 apiRoutes.get('/users', function(req, res) {
 	User.find({}, function(err, users) {
 		res.json(users);
