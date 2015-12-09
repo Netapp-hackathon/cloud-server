@@ -3,8 +3,19 @@ var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 var config = require('../../config');
 var User = require('../models/user');
-
+var http = require('http');
 var apiRoutes = express.Router();
+
+var ovs_options = { 
+	"method": "GET",
+	"hostname": "10.74.213.25",
+	"port": "1337",
+	"path": "/api/workspace?username=suseendr",
+	"headers": {
+		"cache-control": "no-cache",
+	}   
+};
+
 
 apiRoutes.post('/login', function(req, res) {
 	console.log(req.body);
@@ -81,6 +92,7 @@ apiRoutes.get('/validate', function(req, res) {
 });
 
 apiRoutes.get('/workspaces', function(req, res) {
+	var usern = req.username;
 	User.findOne({
 		username: req.username
 	}, function(err, user) {
@@ -92,19 +104,30 @@ apiRoutes.get('/workspaces', function(req, res) {
 				}
 			});
 		} else {
-			res.json({
-				username : req.username,
-				workspaces : [
-					{
-						"name":"dev",
-						"id":"1",
-					},
-					{
-						"name":"fullsteam",
-						"id":"2"
-					}
-				]
+			var ovs_options = {
+						"method": "GET",
+						"hostname": "10.74.213.25",
+						"port": "1337",
+						"path": "/api/workspace/?username="+ usern,
+						"headers": {
+							"cache-control": "no-cache",
+						} 
+					  };
+			var reqs = http.request(ovs_options, function (resp) {
+				var chunks = [];
+
+				resp.on("data", function (chunk) {
+					chunks.push(chunk);
+				});
+
+				resp.on("end", function () {
+					var body = Buffer.concat(chunks);
+					console.log(JSON.parse(body.toString()));
+					res.json(JSON.parse(JSON.parse(body.toString())));
+				});
 			});
+			reqs.end();
+
 		}
 	});
 });
@@ -120,22 +143,32 @@ apiRoutes.get('/ops', function(req, res) {
 				}
 			});
 		} else {
-			res.json([
-				{
-					"opName": "Build",
-					"opDescription": "Trigger a presubmit build",
-					"opId": 0,
-					"opCategory": "Build"
-				},
-				{
-					"opName": "Test",
-					"opDescription": "Trigger a smoke test",
-					"opId": 0,
-					"opCategory": "Test"
-				}
-			]);
+			var ovs_options = { 
+						"method": "GET",
+						"hostname": "10.74.213.25",
+						"port": "1337",
+						"path": "/api/ops",
+						"headers": {
+							"cache-control": "no-cache",
+						}   
+					  };
+			var reqs = http.request(ovs_options, function (resp) {
+				var chunks = []; 
+
+				resp.on("data", function (chunk) {
+					chunks.push(chunk);
+				}); 
+
+				resp.on("end", function () {
+					var body = Buffer.concat(chunks);
+					console.log(JSON.parse(body.toString()));
+					res.json(JSON.parse(JSON.parse(body.toString())));
+				}); 
+			});
+			reqs.end();
+
 		}
-	})
+	});
 })
 apiRoutes.get('/users', function(req, res) {
 	User.find({}, function(err, users) {
