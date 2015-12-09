@@ -42,6 +42,7 @@ apiRoutes.post('/authenticate', function(req, res) {
 		}
 	});
 });
+
 apiRoutes.use(function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
@@ -68,6 +69,35 @@ apiRoutes.use(function(req, res, next) {
 		});
 	}
 })
+
+apiRoutes.get('/workspaces', function(req, res) {
+	console.log(req.body);
+	User.findOne({
+		username: req.username
+	}), function(err, user) {
+		if (!user) {
+			res.json({
+				err: {
+					errNo: 1,
+				errMsg: "No such user!"
+				}
+			});
+		} else {
+			res.json({
+				username : req.username,
+				workspaces : [
+						{"name":"dev",
+						 "id":"1",
+						},
+						{"name":"fullsteam",
+						 "id":"2"
+						}
+					     ]
+			});
+		}
+	}
+});
+
 apiRoutes.get('/', function(req, res) {
 	res.json({message: 'Welcome to VPN bypass APIs'});
 });
