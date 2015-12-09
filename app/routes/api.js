@@ -6,7 +6,7 @@ var User = require('../models/user');
 
 var apiRoutes = express.Router();
 
-apiRoutes.post('/authenticate', function(req, res) {
+apiRoutes.post('/login', function(req, res) {
 	console.log(req.body);
 	User.findOne({
 		username: req.body.username
@@ -34,7 +34,7 @@ apiRoutes.post('/authenticate', function(req, res) {
 				res.json({
 					err: {
 						errNo: 0,
-						errMsg: "Login Successful!"
+						errMsg: "Login successful!"
 					},
 					token: token
 				});
@@ -55,6 +55,7 @@ apiRoutes.use(function(req, res, next) {
 				})
 			} else {
 				req.decoded = decoded;
+				req.username = decoded.username;
 				console.log(decoded);
 				next();
 			}
@@ -68,9 +69,15 @@ apiRoutes.use(function(req, res, next) {
 		});
 	}
 })
-apiRoutes.get('/', function(req, res) {
-	res.json({message: 'Welcome to VPN bypass APIs'});
+apiRoutes.get('/validate', function(req, res) {
+	res.json({
+		err: {
+			errNo: 0,
+			errMsg: "Your token is valid!"
+		}
+	});
 });
+apiRoutes.get('get')
 apiRoutes.get('/users', function(req, res) {
 	User.find({}, function(err, users) {
 		res.json(users);
