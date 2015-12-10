@@ -1,48 +1,52 @@
 var express 	= require('express');
 var mongoose 	= require('mongoose');
-var jwt 		= require('jsonwebtoken');
-var config 		= require('../../config');
-var User 		= require('../models/user');
-var http 		= require('http');
+var jwt 	= require('jsonwebtoken');
+var config 	= require('../../config');
+var User 	= require('../models/user');
+var http 	= require('http');
+var ldap        = require('ldapjs');
 var apiRoutes 	= express.Router();
 
 
 apiRoutes.post('/authenticate', function(req, res) {
-	console.log(req.body);
-	User.findOne({
-		username: req.body.username
-	}, function(err, user) {
-		if (!user) {
+        var usern = req.body.username;
+
+	var client = ldap.createClient({
+		url: 'ldap://vmwaddc06-prd.hq.netapp.com:389'});
+
+	client.bind(req.body.username+'@netapp.com', req.body.password, function (err) {
+		if (err) {
 			res.json({
 				err: {
 					errNo: 1,
-					errMsg: "Authentication failed, user not found!"
+				errMsg: "Authentication failed, user not found!"
+				}   
+			});
+			console.log(err);
+			client.unbind(function(err) {
+				if(err) {
+					console.log(err.message);
+				} else {
+					console.log('client disconnected');
 				}
 			});
-		} else if (user) {
-			if (user.password != req.body.password) {
-				res.json({
-					err: {
-						errNo: 2,
-						errMsg: "Authentication failed, invalid username or password!"
-					}
-				});
-			} else {
-				var token = jwt.sign(user, config.secret, {
-					expiresIn: 7 * 24 * 60 * 60 // Seconds worth 7 days!
-				});
+		} else {
+			var token = jwt.sign(usern, config.secret, {
+				expiresIn: 7 * 24 * 60 * 60 // Seconds worth 7 days!
+			});
 
-				res.json({
-					err: {
-						errNo: 0,
-						errMsg: "Login successful!"
-					},
-					token: token
-				});
-			}
+			res.json({
+				err: {
+					errNo: 0,
+					errMsg: "Login successful!"
+				},
+				token: token
+			});
 		}
+
 	});
 });
+
 apiRoutes.use(function(req, res, next) {
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
 	if (token) {
