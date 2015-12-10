@@ -57,7 +57,7 @@ apiRoutes.use(function(req, res, next) {
 			} else {
 				req.decoded = decoded;
 				req.username = decoded.username;
-				console.log(decoded);
+				//console.log(decoded);
 				next();
 			}
 		});
@@ -100,13 +100,15 @@ apiRoutes.get('/ops', function(req, res) {
 				}
 			};
 			var reqs = http.request(ovs_options, function (resp) {
-				var respStr; 
+				var respStr = ""; 
 
 				resp.on("data", function (chunk) {
 					respStr += chunk;
 				}); 
 
 				resp.on("end", function () {
+					console.log(respStr + "\n");
+
 					res.json(JSON.parse(respStr));
 				}); 
 			});
@@ -131,13 +133,13 @@ apiRoutes.get('/ws', function(req, res) {
 				"method": "GET",
 				"hostname": "10.74.213.25",
 				"port": "1337",
-				"path": "/api/workspace/?username="+ username,
+				"path": "/api/ws/?username=john",// + TODO: username,
 				"headers": {
 					"cache-control": "no-cache",
 				}
 			};
 			var reqs = http.request(ovs_options, function (resp) {
-				var respStr;
+				var respStr = "";
 
 				resp.on("data", function (chunk) {
 					respStr += chunk;
