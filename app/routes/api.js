@@ -78,7 +78,43 @@ apiRoutes.get('/validate', function(req, res) {
 		}
 	});
 });
-apiRoutes.get('/workspaces', function(req, res) {
+apiRoutes.get('/ops', function(req, res) {
+	User.findOne({
+		username: req.username
+	}, function(err, user) {
+		if (!user) {
+			res.json({
+				err: {
+					errNo: 1,
+					errMsg: "Something bad happened!"
+				}
+			});
+		} else {
+			var ovs_options = { 
+				"method": "GET",
+				"hostname": "10.74.213.25",
+				"port": "1337",
+				"path": "/api/ops",
+				"headers": {
+					"cache-control": "no-cache",
+				}
+			};
+			var reqs = http.request(ovs_options, function (resp) {
+				var respStr; 
+
+				resp.on("data", function (chunk) {
+					respStr += chunk;
+				}); 
+
+				resp.on("end", function () {
+					res.json(JSON.parse(respStr));
+				}); 
+			});
+			reqs.end();
+		}
+	});
+})
+apiRoutes.get('/ws', function(req, res) {
 	var username = req.username;
 	User.findOne({
 		username: req.username
@@ -116,42 +152,6 @@ apiRoutes.get('/workspaces', function(req, res) {
 		}
 	});
 });
-apiRoutes.get('/ops', function(req, res) {
-	User.findOne({
-		username: req.username
-	}, function(err, user) {
-		if (!user) {
-			res.json({
-				err: {
-					errNo: 1,
-					errMsg: "Something bad happened!"
-				}
-			});
-		} else {
-			var ovs_options = { 
-				"method": "GET",
-				"hostname": "10.74.213.25",
-				"port": "1337",
-				"path": "/api/ops",
-				"headers": {
-					"cache-control": "no-cache",
-				}
-			};
-			var reqs = http.request(ovs_options, function (resp) {
-				var respStr; 
-
-				resp.on("data", function (chunk) {
-					respStr += chunk;
-				}); 
-
-				resp.on("end", function () {
-					res.json(JSON.parse(respStr));
-				}); 
-			});
-			reqs.end();
-		}
-	});
-})
 apiRoutes.get('/users', function(req, res) {
 	User.find({}, function(err, users) {
 		res.json(users);
